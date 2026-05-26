@@ -1,12 +1,15 @@
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Spinner from "./Spinner";
+import { useTrip } from "../context/TripContext";
 
 const Menu = ({ close }) => {
   const { user, logout, loading } = useAuth();
+  const { endTrip } = useTrip();
 
   const handleLogout = async (event) => {
     event.stopPropagation();
+    await endTrip();
     await logout();
     close();
   };

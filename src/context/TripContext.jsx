@@ -69,24 +69,8 @@ export const TripProvider = ({ children }) => {
       }
     };
 
-    const clearTrip = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("coords")
-          .update({ active: false })
-          .eq("user_id", user.id)
-          .select();
-
-        setCurrentTrip(null);
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    
     if (user?.id) {
       getTrip();
-    } else if(currentTrip && !user) {
-        clearTrip();
     }
   }, [user]);
 
