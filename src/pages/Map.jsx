@@ -7,16 +7,24 @@ import {
   useMap,
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "../utils/supabase";
 import { Link } from "react-router-dom";
+import Menu from "../components/Menu";
+import { useAuth } from "../context/AuthContext";
+import TripMenu from "../components/TripMenu";
+import { useTrip } from "../context/TripContext";
 
 function Map({ darkMode, setDarkMode }) {
+  const { user } = useAuth();
+  const { currentTrip, endTrip, updateLocation } = useTrip();
   const [current, setCurrent] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [buses, setBuses] = useState([]);
-  const [menu, setMenu] = useState(false);
+  const [menuToggle, setMenuToggle] = useState(false);
+  const [tripToggle, setTripToggle] = useState(false);
+  const timerRef = useRef(null);
   const options = {
     enableHighAccuracy: true,
     timeout: 10000,
@@ -33,7 +41,6 @@ function Map({ darkMode, setDarkMode }) {
     function success(pos) {
       const crd = pos.coords;
       setCurrent(crd);
-      console.log("change");
       setLoading(false);
     }
 
@@ -46,7 +53,7 @@ function Map({ darkMode, setDarkMode }) {
   }, []);
 
   useEffect(() => {
-    const getBuses = async () => {
+    const getBuses =setInterval( async () => {
       try {
         const { data: coords, error } = await supabase
           .from("coords")
@@ -62,77 +69,37 @@ function Map({ darkMode, setDarkMode }) {
         setLoadError(err.message);
         console.error(err);
       }
-    };
+    }, 30000);
 
-    getBuses();
+    return () => clearInterval(getBuses);
   }, []);
+
+  useEffect(() => {
+    if (user && currentTrip) {
+      const loadLocation = setInterval(async () => {
+        updateLocation(current);
+        console.log("hello");
+      }, 30000);
+
+      return () => clearInterval(loadLocation);
+    }
+  }, [currentTrip, user]);
 
   return (
     <div className="relative flex items-center justify-center h-screen w-full">
-      {menu && (
-        <div
-          onClick={() => setMenu(false)}
-          className="fixed inset-0 z-9999 flex items-center justify-center bg-black/40 backdrop-blur-md transition-opacity"
-        >
-          <div className="w-72 overflow-hidden rounded-2xl bg-white shadow-xl border border-stone-100">
-            <div className="bg-accgreen p-4 text-center">
-              <h3 className="text-sm font-semibold tracking-wider text-white uppercase">
-                Menu
-              </h3>
-            </div>
-
-            <ul className="p-3 space-y-1">
-              <li>
-                <button
-                  onClick={() => setDarkMode(!darkMode)}
-                  type="button"
-                  className="w-full text-left px-4 py-3 rounded-xl text-stone-700 font-medium hover:bg-accblue1-500/10 hover:text-blue2 transition-colors flex items-center gap-3 cursor-pointer"
-                >
-                  Dark Mode
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="w-full text-left px-4 py-3 rounded-xl text-stone-700 font-medium hover:bg-accblue1-500/10 hover:text-blue2 transition-colors flex items-center gap-3 cursor-pointer"
-                >
-                  To Puerto
-                </button>
-              </li>
-              <li>
-                <button
-                  type="button"
-                  className="w-full text-left px-4 py-3 rounded-xl text-stone-700 font-medium hover:bg-accblue1-500/10 hover:text-blue2 transition-colors flex items-center gap-3 cursor-pointer"
-                >
-                  To La Arena
-                </button>
-              </li>
-
-              <hr className="my-2 border-stone-100" />
-
-              <li>
-                <Link
-                  to="/login"
-                  className="block text-center mx-1 px-4 py-2.5 rounded-xl bg-accsage text-white font-semibold hover:bg-accgreen transition-colors cursor-pointer shadow-sm"
-                >
-                  Login
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      )}
+      {menuToggle && <Menu close={() => setMenuToggle(false)} />}
+      {tripToggle && <TripMenu close={() => setTripToggle(false)} />}
 
       <button
-        onClick={() => setMenu(true)}
+        onClick={() => setMenuToggle(true)}
         type="button"
-        className="group absolute top-5 right-5 z-500 p-2 rounded-lg border border-gray-400 bg-gray-200 text-gray-700 hover:bg-gray-300 cursor-pointer"
+        className="group absolute top-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 24 24"
           fill="currentColor"
-          className="size-6 md:size-8 lg:size-10 group-hover:rotate-360 transition-transform duration-200 ease-in-out"
+          className="size-6 md:size-8 lg:size-10 group-hover:rotate-180 transition-transform duration-200 ease-in-out"
         >
           <path
             fillRule="evenodd"
@@ -140,6 +107,92 @@ function Map({ darkMode, setDarkMode }) {
             clipRule="evenodd"
           />
         </svg>
+      </button>
+      {user && !currentTrip && (
+        <button
+          onClick={() => setTripToggle(true)}
+          type="button"
+          className="group absolute top-5 right-18 md:right-22 lg:right-24 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="size-6 md:size-8 lg:size-10 group-hover:scale-105 transition-transform duration-200 ease-in-out"
+          >
+            <path
+              fillRule="evenodd"
+              d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        </button>
+      )}
+      {user && currentTrip && (
+        <button
+          onClick={endTrip}
+          type="button"
+          className="group absolute top-5 right-18 md:right-22 lg:right-24 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            xmlns="http://www.w3.org/2000/svg"
+            className="size-6 md:size-8 lg:size-10 group-hover:scale105 transition-transform duration-200 ease-in-out"
+          >
+            <g id="SVGRepo_bgCarrier" strokeWidth="0"></g>
+            <g
+              id="SVGRepo_tracerCarrier"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            ></g>
+            <g id="SVGRepo_iconCarrier">
+              {" "}
+              <path
+                d="M15.7806 20.9809C14.7206 22.0009 13.3606 22.5109 12.0006 22.5109C10.6406 22.5109 9.28063 21.9909 8.22063 20.9709C7.86063 20.6309 7.50063 20.2509 7.14062 19.8609L20.0406 6.96094C20.2906 7.50094 20.4806 8.07094 20.6206 8.70094C21.7906 13.8609 18.6306 18.2209 15.7806 20.9809Z"
+                fill="currentColor"
+              ></path>{" "}
+              <path
+                d="M21.7689 2.22891C21.4689 1.92891 20.9789 1.92891 20.6789 2.22891L2.22891 20.6889C1.92891 20.9889 1.92891 21.4789 2.22891 21.7789C2.37891 21.9189 2.56891 21.9989 2.76891 21.9989C2.96891 21.9989 3.15891 21.9189 3.30891 21.7689L21.7689 3.30891C22.0789 3.00891 22.0789 2.52891 21.7689 2.22891Z"
+                fill="currentColor"
+              ></path>{" "}
+              <path
+                d="M8.84865 10.31C8.84865 8.57 10.2586 7.16 11.9986 7.16C13.3086 7.16 14.4286 7.96 14.9086 9.1L18.8886 5.12C17.1186 2.98 14.4387 2 11.9986 2C10.2286 2 8.33865 2.52 6.75865 3.61C5.17865 4.71 3.89865 6.38 3.37865 8.69C2.53865 12.36 3.89865 15.64 5.78865 18.21L10.7886 13.21C9.64865 12.74 8.84865 11.61 8.84865 10.31Z"
+                fill="currentColor"
+              ></path>{" "}
+            </g>
+          </svg>
+        </button>
+      )}
+      <button
+        onClick={() => setDarkMode(!darkMode)}
+        type="button"
+        className="absolute bottom-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+        aria-label="Toggle theme"
+      >
+        {darkMode ? (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="size-6 md:size-8 lg:size-10 transition-transform duration-500 rotate-0 group-hover:rotate-45 text-accsage"
+          >
+            <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
+          </svg>
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="size-6 md:size-8 lg:size-10 transition-transform duration-500 -rotate-12 group-hover:rotate-0 text-accblue2"
+          >
+            <path
+              fillRule="evenodd"
+              d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z"
+              clipRule="evenodd"
+            />
+          </svg>
+        )}
       </button>
       {loading && !loadError ? (
         <div className="w-20 h-20 rounded-full border-6 border-gray-500 border-t-blue-600 animate-spin"></div>
@@ -158,7 +211,7 @@ function Map({ darkMode, setDarkMode }) {
                 : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             }
           />
-          <CircleMarker
+          {!currentTrip && <CircleMarker
             center={[current.latitude, current.longitude]}
             radius={8}
             pathOptions={{
@@ -167,17 +220,7 @@ function Map({ darkMode, setDarkMode }) {
               fillOpacity: 1,
               weight: 2,
             }}
-          ></CircleMarker>
-          <CircleMarker
-            center={[-41.523993, -72.761088]}
-            radius={10}
-            pathOptions={{
-              color: "#ffffff",
-              fillColor: "#fb2c36",
-              fillOpacity: 1,
-              weight: 2,
-            }}
-          ></CircleMarker>
+          ></CircleMarker>}
           {buses.length > 0 &&
             buses.map((bus) => (
               <CircleMarker
@@ -186,7 +229,7 @@ function Map({ darkMode, setDarkMode }) {
                 radius={10}
                 pathOptions={{
                   color: "#ffffff",
-                  fillColor: "#fb2c36",
+                  fillColor: currentTrip && bus.user_id === user.id ? "#f0b100" :"#fb2c36",
                   fillOpacity: 1,
                   weight: 2,
                 }}
