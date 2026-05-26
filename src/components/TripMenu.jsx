@@ -3,9 +3,8 @@ import Spinner from "./Spinner";
 import { useTrip } from "../context/TripContext";
 
 const TripMenu = ({ close }) => {
-  const { startTrip } = useTrip();
+  const { startTrip, loading } = useTrip();
   const [tripInfo, setTripInfo] = useState({ destination: "", departure: "" });
-  const [loading, setLoading] = useState(false);
 
   const handleChange = (event) => {
     setTripInfo({ ...tripInfo, [event.target.name]: event.target.value });
@@ -15,9 +14,10 @@ const TripMenu = ({ close }) => {
     setTripInfo({ ...tripInfo, destination: route });
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    startTrip(tripInfo);
+    await startTrip(tripInfo);
+    close();
   };
 
   const routes = [
