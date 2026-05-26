@@ -53,7 +53,7 @@ function Map({ darkMode, setDarkMode }) {
   }, []);
 
   useEffect(() => {
-    const getBuses =setInterval( async () => {
+    const getBuses =  async () => {
       try {
         const { data: coords, error } = await supabase
           .from("coords")
@@ -69,9 +69,13 @@ function Map({ darkMode, setDarkMode }) {
         setLoadError(err.message);
         console.error(err);
       }
-    }, 30000);
+    };
 
-    return () => clearInterval(getBuses);
+    getBuses();
+
+    const reloadBuses = setInterval(getBuses, 30000);
+
+    return () => clearInterval(reloadBuses);
   }, []);
 
   useEffect(() => {
