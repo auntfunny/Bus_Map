@@ -76,9 +76,9 @@ function Map({ darkMode, setDarkMode }) {
 
   useEffect(() => {
     if (user && currentTrip) {
+      updateLocation(current);
       const loadLocation = setInterval(async () => {
         updateLocation(current);
-        console.log("hello");
       }, 30000);
 
       return () => clearInterval(loadLocation);
