@@ -14,10 +14,12 @@ import Menu from "../components/Menu";
 import { useAuth } from "../context/AuthContext";
 import TripMenu from "../components/TripMenu";
 import { useTrip } from "../context/TripContext";
+import Spinner from "../components/Spinner";
+import UpdateLocation from "../components/UpdateLocation";
 
 function Map({ darkMode, setDarkMode }) {
   const { user } = useAuth();
-  const { currentTrip, endTrip, updateLocation } = useTrip();
+  const { currentTrip, endTrip, updateLocation, loading: tripLoading } = useTrip();
   const [current, setCurrent] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
@@ -52,42 +54,33 @@ function Map({ darkMode, setDarkMode }) {
     navigator.geolocation.watchPosition(success, error, options);
   }, []);
 
-  useEffect(() => {
-    const getBuses =  async () => {
-      try {
-        const { data: coords, error } = await supabase
-          .from("coords")
-          .select("*")
-          .eq("active", true);
+  const getBuses =  async () => {
+    try {
+      const { data: coords, error } = await supabase
+        .from("coords")
+        .select("*")
+        .eq("active", true);
 
-        if (error) {
-          throw error;
-        }
-
-        setBuses(coords);
-      } catch (err) {
-        setLoadError(err.message);
-        console.error(err);
+      if (error) {
+        throw error;
       }
-    };
 
+      setBuses(coords);
+    } catch (err) {
+      setLoadError(err.message);
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
     getBuses();
-
-    const reloadBuses = setInterval(getBuses, 30000);
-
+  }, [currentTrip]);
+  
+  useEffect(() => {
+    const reloadBuses = setInterval(getBuses, 15000);
+    
     return () => clearInterval(reloadBuses);
   }, []);
-
-  useEffect(() => {
-    if (user && currentTrip) {
-      updateLocation(current);
-      const loadLocation = setInterval(async () => {
-        updateLocation(current);
-      }, 30000);
-
-      return () => clearInterval(loadLocation);
-    }
-  }, [currentTrip, user]);
 
   return (
     <div className="relative flex items-center justify-center h-screen w-full">
@@ -243,6 +236,7 @@ function Map({ darkMode, setDarkMode }) {
       ) : (
         <p>{loadError}</p>
       )}
+      {currentTrip && <UpdateLocation current={current}/>}
     </div>
   );
 }
