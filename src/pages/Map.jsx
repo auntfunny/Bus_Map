@@ -90,7 +90,7 @@ function Map({ darkMode, setDarkMode }) {
       <button
         onClick={() => setMenuToggle(true)}
         type="button"
-        className="group absolute top-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+        className="group fixed top-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -109,7 +109,7 @@ function Map({ darkMode, setDarkMode }) {
         <button
           onClick={() => setTripToggle(true)}
           type="button"
-          className="group absolute top-5 right-18 md:right-22 lg:right-24 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+          className="group fixed top-5 right-18 md:right-22 lg:right-24 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
         >
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -129,7 +129,7 @@ function Map({ darkMode, setDarkMode }) {
         <button
           onClick={endTrip}
           type="button"
-          className="group absolute top-5 right-18 md:right-22 lg:right-24 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+          className="group fixed top-5 right-18 md:right-22 lg:right-24 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
         >
           <svg
             viewBox="0 0 24 24"
@@ -164,7 +164,7 @@ function Map({ darkMode, setDarkMode }) {
       <button
         onClick={() => setDarkMode(!darkMode)}
         type="button"
-        className="absolute bottom-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)] group"
+        className="group fixed bottom-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)]"
         aria-label="Toggle theme"
       >
         {darkMode ? (
