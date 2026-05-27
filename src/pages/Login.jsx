@@ -71,7 +71,7 @@ export default function Login() {
           value={credentials.email}
           onChange={handleChange}
           placeholder="you@example.com"
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 bg-stone-50/50 dark:bg-stone-950/40 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-hidden focus:border-accblue1 focus:bg-white dark:focus:bg-stone-950 transition-all text-sm shadow-inner"
+          className="w-full px-4 py-3 rounded-xl border text-base border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 bg-stone-50/50 dark:bg-stone-950/40 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-hidden focus:border-accblue1 focus:bg-white dark:focus:bg-stone-950 transition-all shadow-inner"
           required
         />
       </div>
@@ -92,7 +92,7 @@ export default function Login() {
           value={credentials.password}
           onChange={handleChange}
           placeholder="••••••••"
-          className="w-full px-4 py-3 rounded-xl border border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 bg-stone-50/50 dark:bg-stone-950/40 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-hidden focus:border-accblue1 focus:bg-white dark:focus:bg-stone-950 transition-all text-sm shadow-inner"
+          className="w-full px-4 py-3 rounded-xl border text-base border-stone-200 dark:border-stone-800 text-stone-800 dark:text-stone-100 bg-stone-50/50 dark:bg-stone-950/40 placeholder-stone-400 dark:placeholder-stone-500 focus:outline-hidden focus:border-accblue1 focus:bg-white dark:focus:bg-stone-950 transition-all shadow-inner"
           required
         />
       </div>
