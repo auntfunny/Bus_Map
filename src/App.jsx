@@ -19,6 +19,7 @@ const App = () => {
 
   useEffect(() => {
     scrollTo(0,0);
+    document.body.style.zoom = "100%";
   }, [pathname]);
 
   return (
