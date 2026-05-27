@@ -19,7 +19,25 @@ const App = () => {
 
   useEffect(() => {
     scrollTo(0,0);
-    document.body.style.zoom = "100%";
+    const resetZoom = () => {
+      const viewport = document.querySelector('meta[name="viewport"]');
+      
+      if (viewport) {
+        viewport.setAttribute(
+          'content', 
+          'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0'
+        );
+
+        setTimeout(() => {
+          viewport.setAttribute(
+            'content', 
+            'width=device-width, initial-scale=1.0'
+          );
+        }, 150);
+      }
+    };
+
+    resetZoom();
   }, [pathname]);
 
   return (
