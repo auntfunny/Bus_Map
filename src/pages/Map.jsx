@@ -16,16 +16,24 @@ import TripMenu from "../components/TripMenu";
 import { useTrip } from "../context/TripContext";
 import Spinner from "../components/Spinner";
 import UpdateLocation from "../components/UpdateLocation";
+import { Geolocation } from "@capacitor/geolocation";
+import DarkModeButton from "../components/DarkModeButton";
 
 function Map({ darkMode, setDarkMode }) {
   const { user } = useAuth();
-  const { currentTrip, endTrip, updateLocation, loading: tripLoading } = useTrip();
+  const {
+    currentTrip,
+    endTrip,
+    updateLocation,
+    loading: tripLoading,
+  } = useTrip();
   const [current, setCurrent] = useState({});
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
   const [buses, setBuses] = useState([]);
   const [menuToggle, setMenuToggle] = useState(false);
   const [tripToggle, setTripToggle] = useState(false);
+  const [watchId, setWatchId] = useState(null);
   const timerRef = useRef(null);
   const options = {
     enableHighAccuracy: true,
@@ -34,27 +42,60 @@ function Map({ darkMode, setDarkMode }) {
   };
 
   useEffect(() => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      setLoading(false);
-      return;
-    }
+    const fetchCoordinates = async () => {
+      setLoading(true);
+      try {
+        const permission = await Geolocation.requestPermissions();
 
-    function success(pos) {
-      const crd = pos.coords;
-      setCurrent(crd);
-      setLoading(false);
-    }
+        if (
+          permission.location === "granted" ||
+          permission.coarseLocation === "granted"
+        ) {
+          const coordinates = await Geolocation.getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 10000,
+          });
 
-    function error(err) {
-      console.warn(`ERROR(${err.code}): ${err.message}`);
-      setLoadError(err.message);
-    }
+          setCurrent({
+            latitude: coordinates.coords.latitude,
+            longitude: coordinates.coords.longitude,
+          });
+        } else {
+          setLoadError("Location permission denied by user.");
+        }
+      } catch (err) {
+        console.error(err)
+        setLoadError(err.message || "Failed to get location.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-    navigator.geolocation.watchPosition(success, error, options);
+    const startTracking = async () => {
+      const id = await Geolocation.watchPosition(
+        { enableHighAccuracy: true },
+        (position, err) => {
+          if (position) {
+            console.log(
+              "New position updated:",
+              position.coords.latitude,
+              position.coords.longitude,
+            );
+            setCurrent({
+              latitude: position.coords.latitude,
+              longitude: position.coords.longitude,
+            });
+          }
+        },
+      );
+      setWatchId(id);
+    };
+
+    fetchCoordinates();
+    Geolocation.clearWatch({id: watchId});
   }, []);
 
-  const getBuses =  async () => {
+  const getBuses = async () => {
     try {
       const { data: coords, error } = await supabase
         .from("coords")
@@ -75,10 +116,10 @@ function Map({ darkMode, setDarkMode }) {
   useEffect(() => {
     getBuses();
   }, [currentTrip]);
-  
+
   useEffect(() => {
     const reloadBuses = setInterval(getBuses, 15000);
-    
+
     return () => clearInterval(reloadBuses);
   }, []);
 
@@ -161,36 +202,7 @@ function Map({ darkMode, setDarkMode }) {
           </svg>
         </button>
       )}
-      <button
-        onClick={() => setDarkMode(!darkMode)}
-        type="button"
-        className="group fixed bottom-5 right-5 p-2.5 z-500 rounded-xl flex items-center justify-center cursor-pointer transition-all duration-300 ease-in-out border text-stone-700 bg-white/80 border-stone-200/60 shadow-[0_2px_8px_-3px_rgba(0,0,0,0.05)] hover:scale-105 active:scale-95 hover:bg-white hover:text-accblue2 dark:bg-stone-900/60 dark:border-stone-800/80 dark:text-stone-300 dark:hover:bg-stone-900 dark:hover:text-accsage dark:shadow-[0_4px_12px_-5px_rgba(0,0,0,0.3)]"
-        aria-label="Toggle theme"
-      >
-        {darkMode ? (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="size-6 md:size-8 lg:size-10 transition-transform duration-500 rotate-0 group-hover:rotate-45 text-accsage"
-          >
-            <path d="M12 2.25a.75.75 0 0 1 .75.75v2.25a.75.75 0 0 1-1.5 0V3a.75.75 0 0 1 .75-.75ZM7.5 12a4.5 4.5 0 1 1 9 0 4.5 4.5 0 0 1-9 0ZM18.894 6.166a.75.75 0 0 0-1.06-1.06l-1.591 1.59a.75.75 0 1 0 1.06 1.061l1.591-1.59ZM21.75 12a.75.75 0 0 1-.75.75h-2.25a.75.75 0 0 1 0-1.5H21a.75.75 0 0 1 .75.75ZM17.834 18.894a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 1 0-1.061 1.06l1.59 1.591ZM12 18a.75.75 0 0 1 .75.75V21a.75.75 0 0 1-1.5 0v-2.25A.75.75 0 0 1 12 18ZM7.758 17.303a.75.75 0 0 0-1.061-1.06l-1.591 1.59a.75.75 0 0 0 1.06 1.061l1.591-1.59ZM6 12a.75.75 0 0 1-.75.75H3a.75.75 0 0 1 0-1.5h2.25A.75.75 0 0 1 6 12ZM6.697 7.757a.75.75 0 0 0 1.06-1.06l-1.59-1.591a.75.75 0 0 0-1.061 1.06l1.59 1.591Z" />
-          </svg>
-        ) : (
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="size-6 md:size-8 lg:size-10 transition-transform duration-500 -rotate-12 group-hover:rotate-0 text-accblue2"
-          >
-            <path
-              fillRule="evenodd"
-              d="M9.528 1.718a.75.75 0 0 1 .162.819A8.97 8.97 0 0 0 9 6a9 9 0 0 0 9 9 8.97 8.97 0 0 0 3.463-.69.75.75 0 0 1 .981.98 10.503 10.503 0 0 1-9.694 6.46c-5.799 0-10.5-4.7-10.5-10.5 0-4.368 2.667-8.112 6.46-9.694a.75.75 0 0 1 .818.162Z"
-              clipRule="evenodd"
-            />
-          </svg>
-        )}
-      </button>
+      {/* <DarkModeButton darkMode={darkMode} setDarkMode={setDarkMode}/> */}
       {loading && !loadError ? (
         <div className="w-20 h-20 rounded-full border-6 border-gray-500 border-t-blue-600 animate-spin"></div>
       ) : !loadError ? (
@@ -208,16 +220,18 @@ function Map({ darkMode, setDarkMode }) {
                 : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             }
           />
-          {!currentTrip && <CircleMarker
-            center={[current.latitude, current.longitude]}
-            radius={8}
-            pathOptions={{
-              color: "#ffffff",
-              fillColor: "#3b82f6",
-              fillOpacity: 1,
-              weight: 2,
-            }}
-          ></CircleMarker>}
+          {!currentTrip && (
+            <CircleMarker
+              center={[current.latitude, current.longitude]}
+              radius={8}
+              pathOptions={{
+                color: "#ffffff",
+                fillColor: "#3b82f6",
+                fillOpacity: 1,
+                weight: 2,
+              }}
+            ></CircleMarker>
+          )}
           {buses.length > 0 &&
             buses.map((bus) => (
               <CircleMarker
@@ -226,7 +240,10 @@ function Map({ darkMode, setDarkMode }) {
                 radius={10}
                 pathOptions={{
                   color: "#ffffff",
-                  fillColor: currentTrip && bus.user_id === user.id ? "#f0b100" :"#fb2c36",
+                  fillColor:
+                    currentTrip && bus.user_id === user.id
+                      ? "#f0b100"
+                      : "#fb2c36",
                   fillOpacity: 1,
                   weight: 2,
                 }}
@@ -234,9 +251,9 @@ function Map({ darkMode, setDarkMode }) {
             ))}
         </MapContainer>
       ) : (
-        <p>{loadError}</p>
+        <p className="text-red-500">{loadError}</p>
       )}
-      {currentTrip && <UpdateLocation current={current}/>}
+      {currentTrip && <UpdateLocation current={current} />}
     </div>
   );
 }
